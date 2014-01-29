@@ -1,0 +1,6 @@
+This repository contains various documents associated with understanding and improving our purity measurements in EXO-200.  It contains:
+
+In Documents, some useful reference material.
+In MakeCSVList, the code for creating a comma-separated list of 2.6 MeV events and their energies.
+In MeasurePurity, the code that reads in a comma-separated list of events and outputs a purity.
+In Datasets, some already-produced comma-separated lists of events.
