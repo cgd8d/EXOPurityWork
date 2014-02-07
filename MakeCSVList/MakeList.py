@@ -52,7 +52,14 @@ with open(OutStem + '.txt', 'w') as outfile:
         if event.GetNumChargeClusters() != 1: continue
         scintcluster = event.GetScintillationCluster(0)
         chargecluster = event.GetChargeCluster(0)
-        energy = (math.sin(Theta)*scintcluster.fRawEnergy +
+        # Apply z-correction to scintillation.
+        scint_denoised = scintcluster.fDenoisedEnergy
+        charge_z = chargecluster.fZ
+        if charge_z > 0:
+            scint_denoised /= 0.9355 + 1.289*pow(abs(charge_z/1e3), 2.004)
+        else:
+            scint_denoised /= 0.938 + 0.6892*pow(abs(charge_z/1e3), 1.716)
+        energy = (math.sin(Theta)*scint_denoised +
                   math.cos(Theta)*chargecluster.fPurityCorrectedEnergy)
         if energy < LowerBoundE or energy > UpperBoundE: continue
         if (abs(chargecluster.fX) > 200 or
@@ -64,6 +71,6 @@ with open(OutStem + '.txt', 'w') as outfile:
         time += (scintcluster.fTime - 1024.)/1e6 # Correction for the time of the event within the frame.
 
         # Print output.
-        outfile.write('%f,%f,%f\n' % (chargecluster.fZ,
+        outfile.write('%f,%f,%f\n' % (chargecluster.fDriftTime/ROOT.CLHEP.microsecond,
                                       chargecluster.fCorrectedEnergy,
                                       time))

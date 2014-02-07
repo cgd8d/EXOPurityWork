@@ -214,10 +214,17 @@ def Run(prefix, **kwargs):
             ChargeEnergy = 0.
             for i_charge in range(scint.GetNumChargeClusters()):
                 ChargeEnergy += scint.GetChargeClusterAt(i_charge).fPurityCorrectedEnergy
+            scint_denoised = scint.fDenoisedEnergy
             if IsSingleSite(scint):
-                EnergyList2D_ss.append( (ChargeEnergy, scint.fRawEnergy) )
+                # Apply a z-correction to the scintillation energy.
+                charge_z = scint.GetChargeClusterAt(0).fZ
+                if charge_z > 0:
+                    scint_denoised /= 0.9355 + 1.289*pow(abs(charge_z/1e3), 2.004)
+                else:
+                    scint_denoised /= 0.938 + 0.6892*pow(abs(charge_z/1e3), 1.716)
+                EnergyList2D_ss.append( (ChargeEnergy, scint_denoised) )
             else:
-                EnergyList2D_ms.append( (ChargeEnergy, scint.fRawEnergy) )
+                EnergyList2D_ms.append( (ChargeEnergy, scint_denoised) )
     print "Done."
     print len(EnergyList2D_ss),'passed the single-site cuts.'
     print len(EnergyList2D_ms),'passed the multi-site cuts.'
